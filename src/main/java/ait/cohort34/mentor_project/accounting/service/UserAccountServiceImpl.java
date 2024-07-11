@@ -12,6 +12,7 @@ import jakarta.persistence.EntityManager;
 import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -27,12 +28,14 @@ public class UserAccountServiceImpl implements UserAccountService{
     @Autowired
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
-//    final PasswordEncoder passwordEncoder;
+    @Autowired
+    private JdbcTemplate jdbcTemplate;
     @Autowired
     private EntityManager entityManager;
     final RoleRepository roleRepository;
 
     @Override
+    @Transactional
     public UserDto register(RegisterDto registerDto) {
         if (userAccountRepository.existsByLogin(registerDto.getLogin())) {
             throw new UserExistsException("A user with this login already exists.");
@@ -47,6 +50,7 @@ public class UserAccountServiceImpl implements UserAccountService{
             userRole = new Role("ROLE_STUDENT");
             roleRepository.save(userRole);
         }
+
         userAccount.setRoles(new HashSet<>(Collections.singletonList(userRole)));
         userAccountRepository.save(userAccount);
         return modelMapper.map(userAccount, UserDto.class);
@@ -77,6 +81,7 @@ public class UserAccountServiceImpl implements UserAccountService{
     public UserDto removeUser(Long id) {
         UserAccount userAccount = userAccountRepository.findById(id).orElseThrow(UserNotFoundException::new);
         userAccountRepository.delete(userAccount);
+
         return modelMapper.map(userAccount, UserDto.class);
     }
 

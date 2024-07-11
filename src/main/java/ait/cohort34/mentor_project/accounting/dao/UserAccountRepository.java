@@ -2,6 +2,7 @@ package ait.cohort34.mentor_project.accounting.dao;
 
 import ait.cohort34.mentor_project.accounting.model.UserAccount;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.repository.CrudRepository;
 
 import java.util.Optional;
 
