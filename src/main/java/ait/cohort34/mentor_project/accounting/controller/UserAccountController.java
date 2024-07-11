@@ -4,12 +4,13 @@ import ait.cohort34.mentor_project.accounting.dto.RegisterDto;
 import ait.cohort34.mentor_project.accounting.dto.UserDto;
 import ait.cohort34.mentor_project.accounting.dto.exception.UserExistsException;
 import ait.cohort34.mentor_project.accounting.service.UserAccountService;
+import ait.cohort34.mentor_project.security.service.AuthService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-import org.springframework.web.multipart.MultipartFile;
+
 
 import java.io.IOException;
 import java.util.List;
@@ -19,6 +20,7 @@ import java.util.List;
 @RequiredArgsConstructor
 public class UserAccountController {
 final UserAccountService userAccountService;
+    final AuthService authService;
     final ObjectMapper objectMapper;
     @PostMapping
     public ResponseEntity<String> register(
@@ -35,8 +37,18 @@ final UserAccountService userAccountService;
     public List<UserDto> getUsers() {
         return userAccountService.getUsers();
     }
+
+    @GetMapping
+    public UserDto getUser() {
+        return userAccountService.getUser((String) authService.getAuthInfo().getPrincipal());
+    }
     @DeleteMapping("/user/{id}")
     public UserDto removeUser(@PathVariable Long id) {
         return userAccountService.removeUser(id);
+    }
+
+    @PutMapping("/user/{id}/role")
+    public boolean changeRole(@PathVariable Long id) {
+        return userAccountService.changeRole(id);
     }
 }

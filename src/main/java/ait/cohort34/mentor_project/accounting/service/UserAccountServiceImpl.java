@@ -13,6 +13,7 @@ import lombok.RequiredArgsConstructor;
 import org.modelmapper.ModelMapper;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.jdbc.core.JdbcTemplate;
+import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -28,8 +29,7 @@ public class UserAccountServiceImpl implements UserAccountService{
     @Autowired
     final UserAccountRepository userAccountRepository;
     final ModelMapper modelMapper;
-    @Autowired
-    private JdbcTemplate jdbcTemplate;
+    final PasswordEncoder passwordEncoder;
     @Autowired
     private EntityManager entityManager;
     final RoleRepository roleRepository;
@@ -42,8 +42,8 @@ public class UserAccountServiceImpl implements UserAccountService{
         }
 
         UserAccount userAccount = modelMapper.map(registerDto, UserAccount.class);
-//        String password = passwordEncoder.encode(registerDto.getPassword());
-//        userAccount.setPassword(password);
+        String password = passwordEncoder.encode(registerDto.getPassword());
+        userAccount.setPassword(password);
 
         Role userRole = roleRepository.findByTitle("ROLE_STUDENT");
         if (userRole == null) {
