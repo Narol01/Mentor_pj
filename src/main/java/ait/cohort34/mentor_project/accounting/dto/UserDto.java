@@ -12,5 +12,9 @@ public class UserDto {
     Long id;
     String login;
     String email;
+    private String skills;
+    private String description;
+    private String PhoneNum;
+    private String photoUrls;
     private Set<Role> role;
 }

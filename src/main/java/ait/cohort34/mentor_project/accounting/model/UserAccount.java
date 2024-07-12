@@ -28,11 +28,25 @@ public class UserAccount implements UserDetails {
             inverseJoinColumns = @JoinColumn(name = "role_id")
     )
     private Set<Role> roles;
+    @OneToOne(cascade = CascadeType.ALL, fetch = FetchType.LAZY,mappedBy = "userAccount")
+    private PhotoUser image;
+    private String skills;
+    private String description;
+    private String phoneNum;
 
     public UserAccount(String email, String login, String password) {
         this.email = email;
         this.login = login;
         this.password = password;
+    }
+
+    public UserAccount(String login, String email, String password, Set<Role> roles, String skills, String description, String phoneNum) {
+        this.login = login;
+        this.email = email;
+        this.password = password;
+        this.skills = skills;
+        this.description = description;
+        this.phoneNum = phoneNum;
     }
 
     @Override

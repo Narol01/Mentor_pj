@@ -1,6 +1,7 @@
 package ait.cohort34.mentor_project.accounting.service;
 
 import ait.cohort34.mentor_project.accounting.dto.RegisterDto;
+import ait.cohort34.mentor_project.accounting.dto.TeacherRegisterDto;
 import ait.cohort34.mentor_project.accounting.dto.UserDto;
 import org.springframework.web.multipart.MultipartFile;
 
@@ -13,5 +14,6 @@ public interface UserAccountService {
 
     UserDto getUser(String login);
     UserDto removeUser(Long id);
-    boolean changeRole(Long id);
+    UserDto changeRole(Long id, TeacherRegisterDto teacherRegisterDto, MultipartFile image) throws IOException;
+    byte[] getPhotoById(Long id);
 }

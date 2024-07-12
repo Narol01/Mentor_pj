@@ -2,10 +2,14 @@ package ait.cohort34.mentor_project.accounting.service;
 
 import ait.cohort34.mentor_project.accounting.dao.RoleRepository;
 import ait.cohort34.mentor_project.accounting.dao.UserAccountRepository;
+import ait.cohort34.mentor_project.accounting.dao.UserPhotoRepository;
+import ait.cohort34.mentor_project.accounting.dto.TeacherRegisterDto;
+import ait.cohort34.mentor_project.accounting.dto.exception.PhotoNotFoundException;
 import ait.cohort34.mentor_project.accounting.dto.exception.UserExistsException;
 import ait.cohort34.mentor_project.accounting.dto.exception.UserNotFoundException;
 import ait.cohort34.mentor_project.accounting.dto.RegisterDto;
 import ait.cohort34.mentor_project.accounting.dto.UserDto;
+import ait.cohort34.mentor_project.accounting.model.PhotoUser;
 import ait.cohort34.mentor_project.accounting.model.Role;
 import ait.cohort34.mentor_project.accounting.model.UserAccount;
 import jakarta.persistence.EntityManager;
@@ -16,6 +20,7 @@ import org.springframework.jdbc.core.JdbcTemplate;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import org.springframework.web.multipart.MultipartFile;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -33,6 +38,7 @@ public class UserAccountServiceImpl implements UserAccountService{
     @Autowired
     private EntityManager entityManager;
     final RoleRepository roleRepository;
+    final UserPhotoRepository photoRepository;
 
     @Override
     @Transactional
@@ -87,7 +93,7 @@ public class UserAccountServiceImpl implements UserAccountService{
 
     @Transactional
     @Override
-    public boolean changeRole(Long id) {
+    public UserDto changeRole(Long id, TeacherRegisterDto teacherRegisterDto, MultipartFile image) throws IOException {
         UserAccount userAccount = userAccountRepository.findById(id).orElseThrow(UserNotFoundException::new);
         List<Role> roles = entityManager.createQuery("SELECT r FROM Role r WHERE r.title = :title", Role.class)
                 .setParameter("title", "ROLE_TEACHER")
@@ -97,8 +103,37 @@ public class UserAccountServiceImpl implements UserAccountService{
             roleRepository.save(userRole);
             userAccount.setRoles(new HashSet<>(Collections.singletonList(userRole)));
         }
+        if (image != null && !image.isEmpty()) {
+            PhotoUser photo = new PhotoUser();
+            photo.setName(image.getOriginalFilename());
+            photo.setType(image.getContentType());
+            photo.setData(image.getBytes());
+
+            userAccount.setImage(photo);
+            photo.setUserAccount(userAccount);
+
+            userAccountRepository.save(userAccount);
+        } else {
+            userAccountRepository.save(userAccount);
+        }
+        UserDto userDto = modelMapper.map(userAccount, UserDto.class);
+        if (userAccount.getImage() != null) {
+            String photoUrl = "/api/account/photos/" + userAccount.getImage().getId();
+            userDto.setPhotoUrls(photoUrl);
+        }
+
+        userAccount.setSkills(teacherRegisterDto.getSkills());
+        userAccount.setDescription(teacherRegisterDto.getDescription());
+        userAccount.setPhoneNum(teacherRegisterDto.getPhoneNum());
+
         userAccountRepository.save(userAccount);
-        return true;
+        return userDto;
+    }
+
+    @Override
+    public byte[] getPhotoById(Long id) {
+        PhotoUser photoUser = photoRepository.findById(id).orElseThrow(PhotoNotFoundException::new);
+        return photoUser.getData();
     }
 
 }
